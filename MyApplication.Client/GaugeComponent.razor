@@ -1,0 +1,50 @@
+﻿@inject IJSRuntime JSRuntime
+
+<div class="buttons">
+    <MudButton @onclick="AnimateGauges" Variant="Variant.Filled" Color="Color.Secondary">Animate</MudButton>
+    <MudButton @onclick="StopGaugesAnimation" Variant="Variant.Filled" Color="Color.Secondary">Stop Animation</MudButton>
+</div>
+
+<hr>
+
+    <canvas class="pt-5" id="gaugeCanvas"
+            data-type="radial-gauge"
+            data-value="-20"
+            data-width="400"
+            data-height="400"
+            data-bar-width="10"
+            data-bar-shadow="5"
+            data-color-bar-progress="rgba(50,200,50,.75)">
+    </canvas>
+
+
+@code {
+    private bool scriptsLoaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !scriptsLoaded)
+        {
+            // Dynamically load gauge.min.js
+            await JSRuntime.InvokeVoidAsync("eval", "let script = document.createElement('script'); script.src = '/js/gauge.min.js'; document.head.appendChild(script);");
+
+            // Dynamically load gauge.js
+            await JSRuntime.InvokeVoidAsync("eval", "let script = document.createElement('script'); script.src = '/js/gauge.js'; document.head.appendChild(script);");
+
+            scriptsLoaded = true; // Mark scripts as loaded
+        }
+    }
+
+    private async Task AnimateGauges()
+    {
+        if (!scriptsLoaded) return;
+        await JSRuntime.InvokeVoidAsync("animateGauges");
+    }
+
+    private async Task StopGaugesAnimation()
+    {
+        if (!scriptsLoaded) return;
+        await JSRuntime.InvokeVoidAsync("stopGaugesAnimation");
+    }
+}
+

@@ -1,0 +1,96 @@
+﻿body {
+    font-family: Arial, sans-serif;
+    
+}
+
+
+
+/* From Uiverse.io by satyamchaudharydev */
+.form {
+    --width-of-input: 200px;
+    --border-height: 1px;
+    --border-before-color: rgba(221, 221, 221, 0.39);
+    --border-after-color: #5891ff;
+    --input-hovered-color: #4985e01f;
+    position: relative;
+    width: var(--width-of-input);
+}
+/* styling of Input */
+.input {
+    color: black;
+    font-size: 0.9rem;
+    background-color: transparent;
+    width: 100%;
+    box-sizing: border-box;
+    padding-inline: 0.5em;
+    padding-block: 0.7em;
+    border: none;
+    border-bottom: 1px solid black;
+    /*border-bottom: var(--border-height) solid var(--border-before-color);*/
+}
+/* styling of animated border */
+.input-border {
+    position: absolute;
+    background: var(--border-after-color);
+    width: 0%;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    transition: 0.3s;
+}
+/* Hover on Input */
+input:hover {
+    background: var(--input-hovered-color);
+}
+
+input:focus {
+    outline: none;
+}
+    /* here is code of animated border */
+    input:focus ~ .input-border {
+        width: 100%;
+    }
+/* === if you want to do animated border on typing === */
+/* remove input:focus code and uncomment below code */
+/* input:valid ~ .input-border{
+  width: 100%;
+} */
+
+
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    width: 260px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+    
+}
+
+    .card:hover {
+        transform: scale(1.05);
+    }
+
+    .card h3 {
+        margin: 0 0 10px;
+        font-size: 1.2em;
+        color: #333;
+        color: inherit;
+    }
+
+    .card p {
+        margin: 0;
+        font-size: 1em;
+        color: #555;
+    }
+body.dark-mode .card {
+    
+    color: #fff;
+}
+

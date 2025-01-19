@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyApplication.Client\MyApplication.Client.csproj" />
+    <PackageReference Include="ChartJs.Blazor" Version="1.1.0" />
+    <PackageReference Include="FM.WebSync.Chat.JS" Version="4.9.34" />
+    <PackageReference Include="FourRoads.TelligentCommunity.ThemeHelper" Version="12.0.1.11" />
+    <PackageReference Include="FourRoads.TelligentCommunity100.ThemeHelper" Version="17.2.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.*" />
+    <PackageReference Include="Syncfusion.Blazor.Buttons" Version="27.2.5" />
+    <PackageReference Include="Syncfusion.Blazor.CircularGauge" Version="27.2.5" />
+    <PackageReference Include="Syncfusion.Blazor.Themes" Version="27.2.5" />
+  </ItemGroup>
+
+</Project>

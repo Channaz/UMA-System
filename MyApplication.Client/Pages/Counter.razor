@@ -1,0 +1,71 @@
+﻿@page "/counter"
+<link href="/css/UnitStyle.css" rel="stylesheet" />
+
+@* <PageTitle>Counter</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Counter</MudText>
+
+<MudText Class="mb-4">Current count: @currentCount</MudText>
+
+<MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="IncrementCount">Click me</MudButton>
+ *@
+
+<MudPaper Class="pa-4 mt-4">
+    <h1>Dubai Building</h1>
+    
+    <div class="form">
+        <span>Room Number</span>
+        <input class="input" placeholder="Room Input" required="" type="text">
+        <span class="input-border"></span>
+        
+    </div>
+    <div class="mt-4 d-flex justify-content-between">
+        <MudButton Variant="Variant.Filled" DropShadow="false" Color="Color.Primary"><MudIcon Class="mr-5" Icon="fa-solid fa-plus" Size="Size.Small"></MudIcon>Add New Room</MudButton>
+        <MudButton Class="ml-4" Variant="Variant.Filled" DropShadow="false" Color="Color.Primary"><MudIcon Class="mr-5" Icon="fa-solid fa-arrows-rotate" Size="Size.Small"></MudIcon>Refresh</MudButton>
+    </div>
+    <br />
+    <br />
+    <br />
+    <h1>Floor1</h1>
+    <div class="card-container mt-2">
+        
+        @foreach (var card in Cards)
+        {
+            <div class="card">
+                <h3>Room : @card.Room</h3>
+                <h3>ID : @card.ID</h3>
+                <h3>Name : @card.Name</h3>
+                <h3>Voltage : @card.Voltage<span>V</span></h3>
+                <h3>Current : @card.Current<span>A</span></h3>
+                <h3>Power : @card.Power<span>W</span></h3>
+                <h3>Energy : @card.Energy<span>J</span></h3>
+            </div>
+        }
+    </div>
+
+</MudPaper>
+
+@code {
+    // private int currentCount = 0;
+
+    // private void IncrementCount()
+    // {
+    //     currentCount++;
+    // }
+    // Card data
+    private List<CardData> Cards { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Initialize sample data
+        Cards = new List<CardData>
+        {
+            new CardData { Room = "101", ID = "002", Name = "Samnang", Voltage = 120, Current = 1000, Power = 140, Energy = 10 },
+            new CardData { Room = "101", ID = "002", Name = "Samnang", Voltage = 120, Current = 1000, Power = 140, Energy = 10 },
+            new CardData { Room = "101", ID = "002", Name = "Samnang", Voltage = 120, Current = 1000, Power = 140, Energy = 10 },
+            new CardData { Room = "101", ID = "002", Name = "Samnang", Voltage = 120, Current = 1000, Power = 140, Energy = 10 }
+
+        };
+        
+    }
+}

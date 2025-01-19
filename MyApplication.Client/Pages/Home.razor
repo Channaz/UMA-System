@@ -1,0 +1,138 @@
+﻿@page "/"
+@using MudBlazor
+@using ChartJs.Blazor.ChartJS.LineChart
+@using ChartJs.Blazor.ChartJS.Common
+<script src="js/Chat.js"></script>
+<link href="css/app.css" rel="stylesheet" />
+<script src="js/gauge.min.js"></script>
+<script src="~/js/gauge_control.js"></script>
+
+
+<MudContainer>
+    
+    <div class="img-back" Style="background-color:white; border-radius:12px;">
+        <h1 class="top-text">Dubai Building</h1>
+        <div class="text-img">
+            @foreach(var data in datas)
+            {
+                <span>Voltage: @data.voltage<span>V</span></span>
+
+                <br />
+                <span>Current: @data.current<span>A</span></span>
+
+                <br />
+                <span>Power: @data.power<span>W</span></span>
+
+                <br />
+                <span>Energy: @data.energy<span>J</span></span>
+
+                <br />
+            }
+        </div>
+    </div>
+
+    @* using with javascript *@
+    <div class="bg-light">
+        <MudPaper Class="pa-4 mt-4" Style="background-color:white; border-radius:12px;">
+            <ChartComponent CanvasId="lineChart"
+                            Labels="@(new string[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec" })"
+                            Data="@(new double[] { 220000, 280000, 240000, 230000, 220000, 250000, 270000, 280000, 260000, 275000, 290000, 300000,400000 })"
+                            AnnotationText="Acquisition"
+                            AnnotationIndex="5" />
+        </MudPaper>
+    </div>
+    <div class="row pt-4">
+        <div class="col-4 ">
+            <MudPaper Class="p-5" Elevation="3" Style="background-color:white; border-radius:12px;">
+                <MudChart Class="pt-5 pb-5"  ChartType="ChartType.Donut" Width="300px" Height="300px" InputData="@data" InputLabels="@labels">
+                    <CustomGraphics>
+                        <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" font-family="Helvetica" font-size="2">Overall Usage</text>
+                        <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="Helvetica" font-size="5">@data.Sum().ToString()</text>
+                    </CustomGraphics>
+                </MudChart>
+            </MudPaper>
+        </div>
+        <div class="col-auto">
+            <MudPaper Class="pa-1 mt-4" Elevation="3" Style="background-color:white; border-radius:12px;">
+                <div class="speedometer-container">
+                    <div class="speedometer-text">
+                        <div class="static text-black">Speed</div>
+                        <div class="dynamic">
+                            <span class="km text-black">0</span>
+                            <span class="unit text-black">KMPH</span>
+                        </div>
+                    </div>
+                    <div class="center-point"></div>
+                    <div class="speedometer-center-hide"></div>
+                    <div class="speedometer-bottom-hide"></div>
+                    <div class="arrow-container">
+                        <div class="arrow-wrapper speed-0 ">
+                            <div class="arrow"></div>
+                        </div>
+                    </div>
+                    <div class="speedometer-scale speedometer-scale-1"></div>
+                    <div class="speedometer-scale speedometer-scale-2"></div>
+                    <div class="speedometer-scale speedometer-scale-3"></div>
+                    <div class="speedometer-scale speedometer-scale-4"></div>
+                    <div class="speedometer-scale speedometer-scale-5"></div>
+                    <div class="speedometer-scale speedometer-scale-6"></div>
+                    <div class="speedometer-scale speedometer-scale-7"></div>
+                    <div class="speedometer-scale speedometer-scale-8"></div>
+                    <div class="speedometer-scale speedometer-scale-9"></div>
+                    <div class="speedometer-scale speedometer-scale-10"></div>
+                    <div class="speedometer-scale speedometer-scale-11"></div>
+                    <div class="speedometer-scale speedometer-scale-12"></div>
+                    <div class="speedometer-scale speedometer-scale-13"></div>
+                    <div class="speedometer-scale speedometer-scale-14"></div>
+                    <div class="speedometer-scale speedometer-scale-15"></div>
+                    <div class="speedometer-scale speedometer-scale-16"></div>
+                    <div class="speedometer-scale speedometer-scale-17"></div>
+                    <div class="speedometer-scale speedometer-scale-18"></div>
+                    <div class="speedometer-scale speedometer-scale-19"></div>
+                </div>
+            </MudPaper>
+        </div>
+        <div class="col-4 ">
+            <MudPaper Class="pa-1 mt-4" Elevation="3" style="position: relative; height: 500px; width: 100%; align-content:center; background-color: white; border-radius:12px;">
+                <div class="gauge-container">
+                    <GaugeComponent />
+                </div>
+            </MudPaper>
+        </div>
+    </div>
+</MudContainer>
+
+
+@code{
+    public double[] data = { 25, 25, 25, 25 };
+    public string[] labels = { "Floor1", "Floor2", "Floor3", "Floor4" };
+
+    // private int Index = -1; // Default value cannot be 0 -> first selected index is 0.
+    // public ChartOptions Options = new ChartOptions();
+
+    // public List<ChartSeries> Series = new List<ChartSeries>()
+    // {
+    //             new ChartSeries() { Name = "Category A", Data = new double[] { 20000, 30000, 40000 } },
+    //     new ChartSeries() { Name = "Category A", Data = new double[] { 20000, 30000, 49999 } },
+    //     new ChartSeries() { Name = "Category B", Data = new double[] { 15000, 25000, 35000 } },
+    //     new ChartSeries() { Name = "Category C", Data = new double[] { 10000, 20000, 30000 } },
+    // };
+
+    // // XAxisLabels remain from Jan to Dec
+    // public string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+    // // YAxisTicks added for vertical line labels
+    // public string[] YAxisTicks = { "$20000", "$30000", "$49999" };
+    public List<FetchData> datas { get; set; }
+
+    protected override void OnInitialized()
+    {
+        datas = new List<FetchData>
+        {
+            new FetchData{current = 12.2, energy = 14.5, power = 44.5, voltage = 3.7}
+        };
+    }
+
+}
+
+

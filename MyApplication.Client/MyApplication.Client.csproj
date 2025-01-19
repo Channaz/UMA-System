@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\js\gauge.min.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\js\gauge.min.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ChartJs.Blazor" Version="1.1.0" />
+    <PackageReference Include="FM.WebSync.Chat.JS" Version="4.9.34" />
+    <PackageReference Include="FourRoads.TelligentCommunity.ThemeHelper" Version="12.0.1.11" />
+    <PackageReference Include="FourRoads.TelligentCommunity100.ThemeHelper" Version="17.2.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.*" />
+    <PackageReference Include="MudBlazor" Version="7.*" />
+    <PackageReference Include="Syncfusion.Blazor.Buttons" Version="27.2.5" />
+    <PackageReference Include="Syncfusion.Blazor.CircularGauge" Version="27.2.5" />
+    <PackageReference Include="Syncfusion.Blazor.Themes" Version="27.2.5" />
+  </ItemGroup>
+
+</Project>
