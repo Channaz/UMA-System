@@ -1,11 +1,18 @@
+using ChartJs.Blazor.ChartJS.LineChart;
+using MqttServiceData;
 using MudBlazor.Services;
 using MyApplication.Client.Pages;
 using MyApplication.Components;
+
+//using MyApplication.MqttService;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
+
+//builder.Services.AddScoped<MqttService>();
+builder.Services.AddSingleton<MqttService>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
