@@ -1,21 +1,38 @@
-﻿@inject IJSRuntime JSRuntime
+﻿
 
 <div style="position: relative; height: 500px; width: 100%; align-content:center; background-color: white;">
     <canvas id="@CanvasId"></canvas>
 </div>
 
 @code {
+    [Inject] IJSRuntime JSRuntime { get; set; } = default!;
+
     [Parameter] public string CanvasId { get; set; } = "myChart";
     [Parameter] public string[] Labels { get; set; } = new string[] { };
     [Parameter] public double[] Data { get; set; } = new double[] { };
     [Parameter] public string AnnotationText { get; set; } = "Acquisition";
     [Parameter] public int AnnotationIndex { get; set; } = 0;
 
+    private bool _isFirstRender = true;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             await JSRuntime.InvokeVoidAsync("createLineChart", CanvasId, Labels, Data, AnnotationText, AnnotationIndex);
+            _isFirstRender = false;
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("updateChart", CanvasId, Data);
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!_isFirstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("updateChart", CanvasId, Data);
         }
     }
 }

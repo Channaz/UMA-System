@@ -21,10 +21,12 @@
 
   <ItemGroup>
     <Content Remove="wwwroot\js\gauge.min.js" />
+    <Content Remove="wwwroot\js\socket.io.js" />
   </ItemGroup>
 
   <ItemGroup>
     <_ContentIncludedByDefault Remove="wwwroot\js\gauge.min.js" />
+    <_ContentIncludedByDefault Remove="wwwroot\js\socket.io.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,6 +47,10 @@
 
   <ItemGroup>
     <AdditionalDesignTimeBuildInput Remove="FakesAssemblies\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\js\socket.io.js" />
   </ItemGroup>
 
 </Project>

@@ -1,63 +1,51 @@
-﻿
+﻿function createLineChart(canvasId, labels, data, annotationText, annotationIndex) {
+    const ctx = document.getElementById(canvasId).getContext("2d");
 
-window.createLineChart = (canvasId, labels, data, annotationText, annotationIndex) => {
-    const ctx = document.getElementById(canvasId).getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
+    window[canvasId] = new Chart(ctx, {
+        type: "line",
         data: {
             labels: labels,
-            datasets: [{
-                label: '2024',
-                data: data,
-                fill: false,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                
-                tension: 0.4,
-                pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-            }]
+            datasets: [
+                {
+                    label: "Energy Consumption",
+                    data: data,
+                    borderColor: "teal",
+                    borderWidth: 2,
+                    pointBackgroundColor: "white",
+                    pointBorderColor: "teal",
+                    pointRadius: 4,
+                    fill: false,
+                }
+            ]
         },
         options: {
             responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                },
-                tooltip: {
-                    enabled: true,
-                },
-                annotation: {
-                    annotations: {
-                        label: {
-                            type: 'label',
-                            content: annotationText,
-                            position: {
-                                x: annotationIndex,
-                                y: data[annotationIndex],
-                            },
-                            backgroundColor: '#ffffff',
-                            color: 'rgb(24, 245, 245)',
-                            padding: 4,
-                            cornerRadius: 4,
-                        }
-                    }
-                }
-            },
+            maintainAspectRatio: false,
             scales: {
                 y: {
-                    beginAtZero: false,
-                    title: {
-                        display: true,
-                        text: 'Total Energy'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Months'
+                    beginAtZero: true, // Automatically scale Y-axis
+                }
+            },
+            plugins: {
+                annotation: {
+                    annotations: {
+                        line1: {
+                            type: "line",
+                            scaleID: "x",
+                            value: labels[annotationIndex],
+                            borderColor: "red",
+                            borderWidth: 2
+                        }
                     }
                 }
             }
         }
     });
-};
+}
+
+function updateChart(canvasId, data) {
+    if (window[canvasId]) {
+        window[canvasId].data.datasets[0].data = data;
+        window[canvasId].update();
+    }
+}

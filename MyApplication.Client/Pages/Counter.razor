@@ -1,7 +1,14 @@
 ﻿@page "/counter"
-@inject MqttService MqttService
-<link href="/css/UnitStyle.css" rel="stylesheet" />
+@* @inject MqttService MqttService *@
+@inject IJSRuntime JS
 
+@using System.Net.Http
+@inject HttpClient Http
+@inject WebSocketService Web
+@inject DeviceDataService DeviceData
+
+@rendermode InteractiveAuto
+<link href="/css/UnitStyle.css" rel="stylesheet" />
 
 
 <MudPaper Class="pa-4 mt-4">
@@ -21,13 +28,13 @@
 	<br />
 	<br />
 
-	@if (MqttService.DeviceData == null)
+	@if (DeviceData.DeviceData is null)
 	{
 		<p>Loading data...</p>
 	}
 	else
 	{
-		@foreach (var floor in MqttService.DeviceData.Floors)
+		@foreach (var floor in DeviceData.DeviceData.Floors)
 		{
 			<div class="mt-2">
 				<h2>Floor: @floor.FloorNumber</h2>
@@ -54,51 +61,54 @@
 			</div>
 		}
 	}
-
-	
-
 </MudPaper>
 
 @code {
 
 	// Card data
 	// public static DeviceData? devicedata { get; set; }
-	
-	private System.Timers.Timer? timer;
 
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
-		// Ensure UI updates happen on the correct thread
-		MqttService.CaptureSynchronizationContext();
-		MqttService.OnChange += async () => await InvokeAsync(StateHasChanged);
-
-		// Start a timer to refresh UI every 5 seconds
-		timer = new System.Timers.Timer(5000);
-		timer.Elapsed += async (sender, e) => await InvokeAsync(StateHasChanged);
-		timer.AutoReset = true;
-		timer.Start();
+		DeviceData.OnChange += StateHasChanged; // 🔄 Refresh UI when data updates
+		await DeviceData.InitializeAsync();
 	}
-	protected override void OnAfterRender(bool firstRender)
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
 		{
-			MqttService.OnChange += StateHasChanged;
+			await DeviceData.ConnectWebSocketAsync();
 		}
 	}
-	public void Dispose()
-	{
-		// Unsubscribe to avoid memory leaks
-		MqttService.OnChange -= async () => await InvokeAsync(StateHasChanged);
-
-		// Stop and dispose of the timer
-		if (timer != null)
-		{
-			timer.Stop();
-			timer.Dispose();
-			timer = null;
-		}
-	}
-
 	
+
+	// private DeviceData? deviceData;
+
+	// private bool isInitialized = false; // Ensures JS is only called once
+
+	// protected override async Task OnInitializedAsync()
+	// {
+	// 	// Initial data fetch (optional) from DeviceData
+	// 	deviceData = await Http.GetFromJsonAsync<DeviceData>("api/iot-data");
+	// }
+
+	// protected override async Task OnAfterRenderAsync(bool firstRender)
+	// {
+	// 	if (firstRender && !isInitialized) // Only run once
+	// 	{
+	// 		await JS.InvokeVoidAsync("socketFunctions.connect", DotNetObjectReference.Create(this));
+	// 		isInitialized = true;
+	// 	}
+	// }
+
+	// [JSInvokable("ReceiveMessage")] // set the function Ensure this matches the JavaScript call
+	// public void ReceiveMessage(string jsonData)
+	// {
+	// 	deviceData = System.Text.Json.JsonSerializer.Deserialize<DeviceData>(jsonData);
+	// 	InvokeAsync(StateHasChanged); //  Refresh UI in real-time
+	// }
+
+
 }
 

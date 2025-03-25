@@ -2,32 +2,23 @@
 @using MudBlazor
 @using ChartJs.Blazor.ChartJS.LineChart
 @using ChartJs.Blazor.ChartJS.Common
-<script src="js/Chat.js"></script>
-<link href="css/app.css" rel="stylesheet" />
-<script src="js/gauge.min.js"></script>
-<script src="~/js/gauge_control.js"></script>
-
+@inject DeviceDataService DeviceData
 
 <MudContainer>
 
 	<div class="img-back" Style="background-color:white; border-radius:12px;">
-		<h1 class="top-text">Dubai Building</h1>
+		<h1 class="top-text">Name Building</h1>
 		<div class="text-img">
-			@* @foreach(var data in datas)
+			@if(DeviceData.DeviceData is not null)
 			{
-			<span>Voltage: @data.voltage<span>V</span></span>
+				var (totalV, totalI, totalP, totalE) = DeviceData.GetBuildingTotals();
 
-			<br />
-			<span>Current: @data.current<span>A</span></span>
-
-			<br />
-			<span>Power: @data.power<span>W</span></span>
-
-			<br />
-			<span>Energy: @data.energy<span>J</span></span>
-
-			<br />
-			} *@
+				<h3>🏢 Building-Summary</h3>
+				<p><strong>Voltage:</strong> @totalV.ToString("F2") V</p>
+				<p><strong>Current:</strong> @totalI.ToString("F2") A</p>
+				<p><strong>Power:</strong> @totalP.ToString("F2") W</p>
+				<p><strong>Energy:</strong> @totalE.ToString("F2") J</p>
+			}
 		</div>
 	</div>
 
@@ -35,63 +26,31 @@
 	<div class="bg-light">
 		<MudPaper Class="pa-4 mt-4" Style="background-color:white; border-radius:12px;">
 			<ChartComponent CanvasId="lineChart"
-							Labels="@(new string[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec" })"
-							Data="@(new double[] { 220000, 280000, 240000, 230000, 220000, 250000, 270000, 280000, 260000, 275000, 290000, 300000,400000 })"
-							AnnotationText="Acquisition"
+							Labels="XAxisLabels"
+							Data="monthlyEnergy"
+							AnnotationText="Total Energy"
 							AnnotationIndex="5" />
 		</MudPaper>
 	</div>
 	<div class="row pt-4">
 		<div class="col-4 ">
 			<MudPaper Class="p-5" Elevation="3" Style="background-color:white; border-radius:12px;">
-				<MudChart Class="pt-5 pb-5" ChartType="ChartType.Donut" Width="300px" Height="300px" InputData="@data" InputLabels="@labels">
+				<MudChart Class="pt-5 pb-5" ChartType="ChartType.Donut" Width="300px" Height="300px"
+						  InputData="@data" InputLabels="@labels">
 					<CustomGraphics>
-						<text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" font-family="Helvetica" font-size="2">Overall Usage</text>
-						<text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="Helvetica" font-size="5">@data.Sum().ToString()</text>
+						<text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle"
+							  text-anchor="middle" font-family="Helvetica" font-size="2">
+							Overall Usage
+						</text>
+						<text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle"
+							  text-anchor="middle" font-family="Helvetica" font-size="5">
+							@data.Sum().ToString("N0")
+						</text>
 					</CustomGraphics>
 				</MudChart>
 			</MudPaper>
 		</div>
-		@* <div class="col-auto">
-			<MudPaper Class="pa-1 mt-4" Elevation="3" Style="background-color:white; border-radius:12px;">
-				<div class="speedometer-container">
-					<div class="speedometer-text">
-						<div class="static text-black">Speed</div>
-						<div class="dynamic">
-							<span class="km text-black">0</span>
-							<span class="unit text-black">KMPH</span>
-						</div>
-					</div>
-					<div class="center-point"></div>
-					<div class="speedometer-center-hide"></div>
-					<div class="speedometer-bottom-hide"></div>
-					<div class="arrow-container">
-						<div class="arrow-wrapper speed-0 ">
-							<div class="arrow"></div>
-						</div>
-					</div>
-					<div class="speedometer-scale speedometer-scale-1"></div>
-					<div class="speedometer-scale speedometer-scale-2"></div>
-					<div class="speedometer-scale speedometer-scale-3"></div>
-					<div class="speedometer-scale speedometer-scale-4"></div>
-					<div class="speedometer-scale speedometer-scale-5"></div>
-					<div class="speedometer-scale speedometer-scale-6"></div>
-					<div class="speedometer-scale speedometer-scale-7"></div>
-					<div class="speedometer-scale speedometer-scale-8"></div>
-					<div class="speedometer-scale speedometer-scale-9"></div>
-					<div class="speedometer-scale speedometer-scale-10"></div>
-					<div class="speedometer-scale speedometer-scale-11"></div>
-					<div class="speedometer-scale speedometer-scale-12"></div>
-					<div class="speedometer-scale speedometer-scale-13"></div>
-					<div class="speedometer-scale speedometer-scale-14"></div>
-					<div class="speedometer-scale speedometer-scale-15"></div>
-					<div class="speedometer-scale speedometer-scale-16"></div>
-					<div class="speedometer-scale speedometer-scale-17"></div>
-					<div class="speedometer-scale speedometer-scale-18"></div>
-					<div class="speedometer-scale speedometer-scale-19"></div>
-				</div>
-			</MudPaper>
-		</div> *@
+		
 		<div class="col-4 ">
 			<MudPaper Class="pa-1 mt-4" Elevation="3" style="position: relative; height: 500px; width: 100%; align-content:center; background-color: white; border-radius:12px;">
 				<div class="gauge-container">
@@ -104,77 +63,84 @@
 
 
 @code {
-	public double[] data = { 25, 25, 25, 25 };
-	public string[] labels = { "Floor1", "Floor2", "Floor3", "Floor4" };
 
-	// private System.Timers.Timer? timer;
+	private double[] data = new double[0];
+	private string[] labels = new string[0];
 
-	// protected override void OnInitialized()
-	// {
-	// 	// Ensure UI updates happen on the correct thread
-	// 	MqttService.CaptureSynchronizationContext();
-	// 	MqttService.OnChange += async () => await InvokeAsync(StateHasChanged);
+	protected override async Task OnInitializedAsync()
+	{
 
-	// 	// Start a timer to refresh UI every 5 seconds
-	// 	timer = new System.Timers.Timer(5000);
-	// 	timer.Elapsed += async (sender, e) => await InvokeAsync(StateHasChanged);
-	// 	timer.AutoReset = true;
-	// 	timer.Start();
-	// }
+		DeviceData.OnChange += StateHasChanged; // 🔄 Refresh UI when data updates
+		DeviceData.OnChange += HandleDataUpdate;
+		await DeviceData.InitializeAsync();
 
-	// public void Dispose()
-	// {
-	// 	// Unsubscribe to avoid memory leaks
-	// 	MqttService.OnChange -= async () => await InvokeAsync(StateHasChanged);
+		if (DeviceData.DeviceData?.Floors != null)
+		{
+			labels = DeviceData.DeviceData.Floors
+				.Select(f => $"Floor {f.FloorNumber}")
+				.ToArray();
 
-	// 	// Stop and dispose of the timer
-	// 	if (timer != null)
-	// 	{
-	// 		timer.Stop();
-	// 		timer.Dispose();
-	// 		timer = null;
-	// 	}
-	// }
-	// protected override void OnAfterRender(bool firstRender)
-	// {
-	// 	if (firstRender)
-	// 	{
-	// 		MqttService.OnChange += StateHasChanged;
-	// 	}
-	// }
+			data = DeviceData.GetEnergyPerFloor();
+		}
+	}
 
+	private void HandleDataUpdate()
+	{
+		if (DeviceData.DeviceData?.Floors != null)
+		{
+			labels = DeviceData.DeviceData.Floors
+				.Select(f => $"Floor {f.FloorNumber}")
+				.ToArray();
+
+			data = DeviceData.GetEnergyPerFloor();
+		}
+
+		InvokeAsync(StateHasChanged); // 🔄 Ensure UI updates on WebSocket message
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await DeviceData.ConnectWebSocketAsync();
+		}
+	}
+	// Labels for X-Axis remain fixed (January to December)
+	private readonly string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+	private double[] monthlyEnergy = new double[12]; // Store monthly data
+
+	private async Task LoadChartData()
+	{
+		await DeviceData.InitializeAsync(); // Fetch latest data
+		UpdateChart();
+
+	}
+
+	private void UpdateChart()
+	{
+		if (DeviceData.DeviceData == null) return;
+
+		// Sum Energy (E) for all rooms across all floors
+		monthlyEnergy = DeviceData.DeviceData.Floors
+			.Select(floor => floor.Rooms.SelectMany(room => room.Energy).Sum()) // Sum energy per floor
+			.Take(12) // Ensure 12 months of data
+			.ToArray();
+
+		InvokeAsync(StateHasChanged); // Refresh UI
+	}
 	
-	// public void Dispose()
-	// {
-	//     MqttService.OnMessageReceived -= HandleMqttMessage;
-		// }
 
+	public ChartOptions Options = new ChartOptions();
 
-	// private int Index = -1; // Default value cannot be 0 -> first selected index is 0.
-	// public ChartOptions Options = new ChartOptions();
+	public List<ChartSeries> Series = new List<ChartSeries>()
+	{
+	            new ChartSeries() { Name = "Category A", Data = new double[] { 20000, 30000, 40000 } },
+	    new ChartSeries() { Name = "Category A", Data = new double[] { 20000, 30000, 49999 } },
+	    new ChartSeries() { Name = "Category B", Data = new double[] { 15000, 25000, 35000 } },
+	    new ChartSeries() { Name = "Category C", Data = new double[] { 10000, 20000, 30000 } },
+	};
 
-	// public List<ChartSeries> Series = new List<ChartSeries>()
-	// {
-	//             new ChartSeries() { Name = "Category A", Data = new double[] { 20000, 30000, 40000 } },
-	//     new ChartSeries() { Name = "Category A", Data = new double[] { 20000, 30000, 49999 } },
-	//     new ChartSeries() { Name = "Category B", Data = new double[] { 15000, 25000, 35000 } },
-	//     new ChartSeries() { Name = "Category C", Data = new double[] { 10000, 20000, 30000 } },
-	// };
-
-	// // XAxisLabels remain from Jan to Dec
-	// public string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-
-	// // YAxisTicks added for vertical line labels
-	// public string[] YAxisTicks = { "$20000", "$30000", "$49999" };
-	// public List<FetchData> datas { get; set; }
-
-	// protected override void OnInitialized()
-	// {
-	//     datas = new List<FetchData>
-	//     {
-	//         new FetchData{current = 12.2, energy = 14.5, power = 44.5, voltage = 3.7}
-	//     };
-		// }
 
 }
 

@@ -1,7 +1,8 @@
-using ChartJs.Blazor.ChartJS.LineChart;
+﻿using ChartJs.Blazor.ChartJS.LineChart;
 using MqttServiceData;
 using MudBlazor.Services;
 using MyApplication.Client.Pages;
+using MyApplication.Client.Service;
 using MyApplication.Components;
 
 //using MyApplication.MqttService;
@@ -12,12 +13,37 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMudServices();
 
 //builder.Services.AddScoped<MqttService>();
-builder.Services.AddSingleton<MqttService>();
+//builder.Services.AddSingleton<MqttService>();
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+builder.Services.AddAntiforgery();
+builder.Services.AddServerSideBlazor();
+builder.Services.AddControllers();
+builder.Services.AddScoped<WebSocketService>();
+builder.Services.AddScoped<DeviceDataService>();
+
+//builder.Services.AddHttpClient("API", client =>
+//{
+//	client.BaseAddress = new Uri("http://localhost:3000/");
+//});
+
+builder.Services.AddScoped(sp => new HttpClient
+{
+	BaseAddress = new Uri("http://localhost:3000/") // Ensure this URL is correct!
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowMyApplication",
+        policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+    );
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
-    .AddInteractiveWebAssemblyComponents();
+	.AddInteractiveServerComponents()
+	.AddInteractiveWebAssemblyComponents();
 
 var app = builder.Build();
 
@@ -34,9 +60,21 @@ else
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
+
+app.UseRouting();
+
 app.UseAntiforgery();
+app.UseAuthorization();
+app.UseCors("AllowMyApplication");
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapRazorPages();
+
+    endpoints.MapBlazorHub();
+});
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
