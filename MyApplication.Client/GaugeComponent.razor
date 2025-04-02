@@ -1,50 +1,177 @@
-﻿@inject IJSRuntime JSRuntime
+﻿ @inject IJSRuntime JSRuntime
+ @inject DeviceDataService DeviceData
 
-<div class="buttons">
-    <MudButton @onclick="AnimateGauges" Variant="Variant.Filled" Color="Color.Secondary">Animate</MudButton>
-    <MudButton @onclick="StopGaugesAnimation" Variant="Variant.Filled" Color="Color.Secondary">Stop Animation</MudButton>
+<div class="container">
+	@* <div class="buttons">
+		<MudButton @onclick="AnimateGauges" Variant="Variant.Filled" Color="Color.Secondary">Animate</MudButton>
+		<MudButton @onclick="StopGaugesAnimation" Variant="Variant.Filled" Color="Color.Secondary">Stop Animation</MudButton>
+	</div> *@
+
+	<div class="">
+		<select class="form-select input-border" @onchange="OnRoomChange">
+			@foreach (var room in rooms)
+			{
+				<option value="@room">@($"Room {room}")</option>
+			}
+		</select>
+	</div>
+
+
+	<hr>
+
+	<canvas class="pt-5" id="gaugeCanvas"
+			data-type="radial-gauge"
+			data-value="-20"
+			data-width="400"
+			data-height="400"
+			data-bar-width="10"
+			data-bar-shadow="5"
+			data-color-bar-progress="rgba(50,200,50,.75)">
+	</canvas>
+
 </div>
 
-<hr>
-
-    <canvas class="pt-5" id="gaugeCanvas"
-            data-type="radial-gauge"
-            data-value="-20"
-            data-width="400"
-            data-height="400"
-            data-bar-width="10"
-            data-bar-shadow="5"
-            data-color-bar-progress="rgba(50,200,50,.75)">
-    </canvas>
-
-
 @code {
-    private bool scriptsLoaded = false;
+	private bool scriptsLoaded = false;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && !scriptsLoaded)
-        {
-            // Dynamically load gauge.min.js
-            await JSRuntime.InvokeVoidAsync("eval", "let script = document.createElement('script'); script.src = '/js/gauge.min.js'; document.head.appendChild(script);");
+	private int selectedRoom = 0;
+	private double currentFlow = 0;
+	private List<int> rooms = new();
+	private CancellationTokenSource? cts = new(); // To stop zeroing when new data comes
 
-            // Dynamically load gauge.js
-            await JSRuntime.InvokeVoidAsync("eval", "let script = document.createElement('script'); script.src = '/js/gauge.js'; document.head.appendChild(script);");
 
-            scriptsLoaded = true; // Mark scripts as loaded
-        }
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		DeviceData.OnChange += HandleDeviceDataUpdate; //update
+		await DeviceData.InitializeAsync(); //fetch data
 
-    private async Task AnimateGauges()
-    {
-        if (!scriptsLoaded) return;
-        await JSRuntime.InvokeVoidAsync("animateGauges");
-    }
+		LoadRooms();
+		UpdateGuage();	
+	}
 
-    private async Task StopGaugesAnimation()
-    {
-        if (!scriptsLoaded) return;
-        await JSRuntime.InvokeVoidAsync("stopGaugesAnimation");
-    }
+	private void HandleDeviceDataUpdate()
+	{
+		LoadRooms(); // Refresh rooms when new data comes in
+		UpdateGuage(); // Refresh gauge after room update
+	}
+
+	private void LoadRooms()
+	{
+		if (DeviceData.DeviceData?.Floors != null)
+		{
+			var newRooms = DeviceData.DeviceData?.Floors?
+				.SelectMany(f => f.Rooms.Select(r => r.RoomNumbers))
+				.SelectMany(r => r)
+				.Distinct()
+				.ToList();
+
+			if (newRooms == null || !newRooms.Any()) return;
+
+			// Only update if the room list has changed
+			if (!rooms.SequenceEqual(newRooms))
+			{
+				rooms = newRooms;
+
+				// Set default room only if it's not already selected
+				if (!rooms.Contains(selectedRoom))
+				{
+					selectedRoom = rooms.First();
+				}
+
+				StateHasChanged();
+			}
+
+			
+		}
+	}
+
+	private void UpdateGuage()
+	{
+		if (DeviceData.DeviceData?.Floors == null) return;
+
+		var roomData = DeviceData.DeviceData.Floors
+				.SelectMany(f => f.Rooms)
+				.FirstOrDefault(r => r.RoomNumbers.Contains(selectedRoom)); // Find the correct room
+
+		if (roomData != null)
+		{
+			int index = roomData.RoomNumbers.IndexOf(selectedRoom); // Find index of the selected room
+			if (index >= 0 && index < roomData.Current.Count)
+			{
+				currentFlow = roomData.Current[index]; // Get the correct "current" value based on index
+			}
+			else
+			{
+				currentFlow = 0; // Default to 0 if no valid index found
+			}
+		}
+		else
+		{
+			currentFlow = 0; // Default value if room data is missing
+		}
+
+		cts?.Cancel(); // Stop any ongoing zero countdown
+		cts = new CancellationTokenSource();
+
+		InvokeAsync(async () =>
+		{
+			await Task.Delay(1000); // Wait for gauge to be initialized
+			await JSRuntime.InvokeVoidAsync("updateGaugeValue", currentFlow);
+			StateHasChanged();
+
+			// Start zero countdown if no new data comes in 10 seconds
+			await Task.Delay(10000, cts.Token);
+			await JSRuntime.InvokeVoidAsync("updateGaugeValue", 0);
+		});
+	}
+
+	private void OnRoomChange(ChangeEventArgs e)
+	{
+		if (int.TryParse(e.Value?.ToString(), out int room))
+		{
+			selectedRoom = room;
+			UpdateGuage(); //update guage when room change
+		}
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender && !scriptsLoaded)
+		{
+			// Dynamically load gauge.min.js
+			await JSRuntime.InvokeVoidAsync("eval", "let script = document.createElement('script'); script.src = '/js/gauge.min.js'; document.head.appendChild(script);");
+
+			// Dynamically load gauge.js
+			await JSRuntime.InvokeVoidAsync("eval", "let script = document.createElement('script'); script.src = '/js/gauge.js'; document.head.appendChild(script);");
+
+			scriptsLoaded = true; // Mark scripts as loaded
+
+			// Wait for gauge to initialize
+			await Task.Delay(1500);
+			await JSRuntime.InvokeVoidAsync("initializeGauge"); // Call initialization manually
+		}
+		
+	}
+
+	
+
+	// private async Task AnimateGauges()
+	// {
+	// 	if (!scriptsLoaded) return;
+	// 	await JSRuntime.InvokeVoidAsync("animateGauges");
+	// }
+
+	// private async Task StopGaugesAnimation()
+	// {
+	// 	if (!scriptsLoaded) return;
+	// 	await JSRuntime.InvokeVoidAsync("stopGaugesAnimation");
+	// }
+
+	public void Dispose()
+	{
+		DeviceData.OnChange -= UpdateGuage; // Prevent memory leaks
+		cts?.Cancel();
+		cts?.Dispose();
+	}
 }
 
