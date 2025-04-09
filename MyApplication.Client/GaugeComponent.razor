@@ -59,7 +59,7 @@
 	{
 		if (DeviceData.DeviceData?.Floors != null)
 		{
-			var newRooms = DeviceData.DeviceData?.Floors?
+			var newRooms = DeviceData.DeviceData?.Floors? 
 				.SelectMany(f => f.Rooms.Select(r => r.RoomNumbers))
 				.SelectMany(r => r)
 				.Distinct()

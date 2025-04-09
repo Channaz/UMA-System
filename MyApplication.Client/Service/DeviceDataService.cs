@@ -14,6 +14,7 @@ namespace MyApplication.Client.Service
 		private readonly IJSRuntime _js;
 		private DotNetObjectReference<DeviceDataService>? _dotNetRef;
 		private bool _isInitialized = false;
+		public bool IsDataFetchTimedOut { get; private set; } = false;
 
 		public event Action? OnChange;
 		public DeviceData? DeviceData { get; set; }
@@ -27,8 +28,10 @@ namespace MyApplication.Client.Service
 				_http.BaseAddress = new Uri("http://localhost:3000/");
 		}
 
+		//for alert message
 		public async Task InitializeAsync()
 		{
+			//using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 			try
 			{
 				if (_http.BaseAddress == null)
@@ -37,15 +40,65 @@ namespace MyApplication.Client.Service
 				}
 
 				DeviceData = await _http.GetFromJsonAsync<DeviceData>("api/iot-data");
-				Console.WriteLine($"📡 Initial API Data: {DeviceData}");
+
+				//IsDataFetchTimedOut = false;
+
+				//Console.WriteLine("🟢 Starting data fetch...");
+
+				//var data = await GetDeviceDataAsync(cts.Token); // Try to fetch data with timeout
+				//if (data == null)
+				//	throw new Exception("❌ Received null data from API.");
+
+
+				//DeviceData = data;
+
+				Console.WriteLine("✅ Data fetch succeeded.");
+				//if(cts.Token.IsCancellationRequested)
+				//{
+				//	IsDataFetchTimedOut = true;
+				//	throw new OperationCanceledException("Data fetch timed out.");
+				//}
 
 				OnChange?.Invoke(); // Notify UI
 			}
+			catch(OperationCanceledException)
+			{
+				IsDataFetchTimedOut = true;
+				Console.WriteLine("⏱️ API data fetch timeout.");
+				OnChange?.Invoke(); // notify layout
+			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"❌ Error fetching API data: {ex.Message}");
+				// Handle other errors (e.g. log)
+				IsDataFetchTimedOut = true;
+				Console.WriteLine($"❌ API error: {ex.Message}");
+				OnChange?.Invoke(); // notify layout
+			}
+			finally
+			{
+				// Always notify the UI
+				OnChange?.Invoke();
 			}
 		}
+
+		//private async Task<DeviceData> GetDeviceDataAsync(CancellationToken token)
+		//{
+		//	// Replace this with your actual API endpoint
+		//	string url = "api/iot-data";
+
+		//	var response = await _http.GetAsync(url, token);
+
+		//	response.EnsureSuccessStatusCode();
+
+		//	var data = await response.Content.ReadFromJsonAsync<DeviceData>(cancellationToken: token);
+		//	Console.WriteLine($"📡 API Data: {data}");
+		//	if (data == null)
+		//	{
+		//		throw new Exception("Received null data from API.");
+		//	}
+
+		//	return data;
+		//}
 
 		public async Task ConnectWebSocketAsync()
 		{
@@ -60,12 +113,22 @@ namespace MyApplication.Client.Service
 		[JSInvokable("ReceiveMessage")]
 		public void ReceiveMessage(string jsonData)
 		{
+			IsDataFetchTimedOut = false;
 			DeviceData = System.Text.Json.JsonSerializer.Deserialize<DeviceData>(jsonData);
 			Console.WriteLine($"🔄 WebSocket Updated Data: {DeviceData}");
 
 			OnChange?.Invoke(); // 🔄 Notify UI
 		}
 
+		[JSInvokable("HandleTimeout")]
+		public void HandleTimeout()
+		{
+			IsDataFetchTimedOut = true;
+			Console.WriteLine("⚠️ No data received via WebSocket in 1 second.");
+			OnChange?.Invoke(); // Update UI
+		}
+
+		//set total values for the building
 		public (double voltage, double current, double power, double energy) GetBuildingTotals()
 		{
 			double totalVoltage = 0, totalCurrent = 0, totalPower = 0, totalEnergy = 0;
@@ -86,6 +149,7 @@ namespace MyApplication.Client.Service
 			return (totalVoltage, totalCurrent, totalPower, totalEnergy);
 		}
 
+		//get energy for each floor apply to Donut Chat
 		public double[] GetEnergyPerFloor()
 		{
 			if (DeviceData?.Floors == null) return new double[0]; // Prevent null reference

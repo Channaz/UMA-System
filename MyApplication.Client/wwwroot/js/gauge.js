@@ -1,5 +1,6 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
-    initializeGauge();
+    //initializeGauge();
+    updateGaugeValue(value);
 });
 
 if (!Array.prototype.forEach) {
@@ -24,17 +25,8 @@ function initializeGauge() {
         console.log("Initializing gauge...");
         gaugeCanvas.gauge = new RadialGauge({
             renderTo: gaugeCanvas,
-            width: 400,
-            height: 400,
             minValue: 0,
             maxValue: 100,
-            majorTicks: ["0", "20", "40", "60", "80", "100"],
-            minorTicks: 2,
-            strokeTicks: true,
-            highlights: [{ from: 60, to: 100, color: "rgba(200, 50, 50, .75)" }],
-            colorPlate: "#fff",
-            animationRule: "elastic",
-            animationDuration: 500,
         }).draw();
     }
 }
@@ -72,11 +64,11 @@ document.fonts && document.fonts.forEach(function (font) {
 function updateGaugeValue(value) {
     let gaugeCanvas = document.querySelector("#gaugeCanvas");
 
-    if (!gaugeCanvas || !gaugeCanvas.gauge) {
-        console.warn("Gauge is not initialized yet. Retrying...");
-        setTimeout(() => updateGaugeValue(value), 500); // Retry after 500ms
-        return;
-    }
+    //if (!gaugeCanvas || !gaugeCanvas.gauge) {
+    //    console.warn("Gauge is not initialized yet. Retrying...");
+    //    setTimeout(() => updateGaugeValue(value), 500); // Retry after 500ms
+    //    return;
+    //}
 
     let gauge = gaugeCanvas.gauge;
     gauge.value = value;

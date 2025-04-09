@@ -6,10 +6,11 @@
 
 <MudContainer>
 
+
 	<div class="img-back" Style="background-color:white; border-radius:12px;">
 		<h1 class="top-text">Name Building</h1>
 		<div class="text-img">
-			@if(DeviceData.DeviceData is not null)
+			@if (DeviceData.DeviceData is not null)
 			{
 				var (totalV, totalI, totalP, totalE) = DeviceData.GetBuildingTotals();
 
@@ -50,7 +51,7 @@
 				</MudChart>
 			</MudPaper>
 		</div>
-		
+
 		<div class="col-4 ">
 			<MudPaper Class="pa-1 mt-4" Elevation="3" style="position: relative; height: 500px; width: 100%; align-content:center; background-color: white; border-radius:12px;">
 				<div class="gauge-container">
@@ -129,16 +130,16 @@
 
 		InvokeAsync(StateHasChanged); // Refresh UI
 	}
-	
+
 
 	public ChartOptions Options = new ChartOptions();
 
 	public List<ChartSeries> Series = new List<ChartSeries>()
 	{
-	            new ChartSeries() { Name = "Category A", Data = new double[] { 20000, 30000, 40000 } },
-	    new ChartSeries() { Name = "Category A", Data = new double[] { 20000, 30000, 49999 } },
-	    new ChartSeries() { Name = "Category B", Data = new double[] { 15000, 25000, 35000 } },
-	    new ChartSeries() { Name = "Category C", Data = new double[] { 10000, 20000, 30000 } },
+		new ChartSeries() { Name = "Category A", Data = new double[] { 20000, 30000, 40000 } },
+		new ChartSeries() { Name = "Category A", Data = new double[] { 20000, 30000, 49999 } },
+		new ChartSeries() { Name = "Category B", Data = new double[] { 15000, 25000, 35000 } },
+		new ChartSeries() { Name = "Category C", Data = new double[] { 10000, 20000, 30000 } },
 	};
 
 
