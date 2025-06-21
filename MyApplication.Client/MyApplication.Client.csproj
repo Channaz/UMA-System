@@ -8,6 +8,16 @@
     <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
+
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="FakesAssemblies\**" />
     <Content Remove="FakesAssemblies\**" />
@@ -51,6 +61,10 @@
 
   <ItemGroup>
     <None Include="wwwroot\js\socket.io.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyApplication.Shared\MyApplication.Shared.csproj" />
   </ItemGroup>
 
 </Project>

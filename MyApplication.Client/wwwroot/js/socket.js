@@ -19,7 +19,7 @@
             window.socketFunctions.timeoutId = setTimeout(() => {
                 // Timeout triggered: No data received in 1 second
                 dotNetHelper.invokeMethodAsync("HandleTimeout");
-            }, 1000); // 1 second timeout
+            }, 3000); // 1 second timeout
         };
 
         window.socketFunctions.socket.on("sensorData", (data) => {

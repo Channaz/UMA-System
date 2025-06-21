@@ -6,6 +6,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApplication", "MyApplicat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApplication.Client", "MyApplication.Client\MyApplication.Client.csproj", "{6AD78BAB-87C5-4393-AE63-F8680C212B98}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyApplication.Shared", "MyApplication.Shared\MyApplication.Shared.csproj", "{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,6 +42,18 @@ Global
 		{6AD78BAB-87C5-4393-AE63-F8680C212B98}.Release|x64.Build.0 = Release|Any CPU
 		{6AD78BAB-87C5-4393-AE63-F8680C212B98}.Release|x86.ActiveCfg = Release|Any CPU
 		{6AD78BAB-87C5-4393-AE63-F8680C212B98}.Release|x86.Build.0 = Release|Any CPU
+		{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}.Debug|x64.Build.0 = Debug|Any CPU
+		{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}.Debug|x86.Build.0 = Debug|Any CPU
+		{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}.Release|x64.ActiveCfg = Release|Any CPU
+		{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}.Release|x64.Build.0 = Release|Any CPU
+		{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}.Release|x86.ActiveCfg = Release|Any CPU
+		{EDF50A23-9A16-4D38-BC81-AFAA9747CB95}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

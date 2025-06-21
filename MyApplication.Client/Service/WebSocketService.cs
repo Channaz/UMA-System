@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace MyApplication.Client.Service
+namespace MyApplication.Client.Services
 {
     public class WebSocketService : IAsyncDisposable
     {

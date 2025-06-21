@@ -1,8 +1,8 @@
 ﻿using ChartJs.Blazor.ChartJS.LineChart;
-using MqttServiceData;
+//using MqttServiceData;
 using MudBlazor.Services;
 using MyApplication.Client.Pages;
-using MyApplication.Client.Service;
+using MyApplication.Service;
 using MyApplication.Components;
 
 //using MyApplication.MqttService;
@@ -20,17 +20,17 @@ builder.Services.AddRazorPages();
 builder.Services.AddAntiforgery();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddControllers();
-builder.Services.AddScoped<WebSocketService>();
-builder.Services.AddScoped<DeviceDataService>();
+//builder.Services.AddScoped<WebSocketService>();
+builder.Services.AddSingleton<DeviceDataService>();
 
 //builder.Services.AddHttpClient("API", client =>
 //{
 //	client.BaseAddress = new Uri("http://localhost:3000/");
-//});
+//});   
 
-builder.Services.AddScoped(sp => new HttpClient
+builder.Services.AddHttpClient<DeviceDataService>(client =>
 {
-	BaseAddress = new Uri("http://localhost:3000/") // Ensure this URL is correct!
+	client.BaseAddress = new Uri("http://localhost:3000"); // Or your MQTT backend
 });
 
 builder.Services.AddCors(options =>
@@ -75,6 +75,8 @@ app.UseEndpoints(endpoints =>
 
     endpoints.MapBlazorHub();
 });
+
+app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

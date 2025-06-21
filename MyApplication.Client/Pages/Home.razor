@@ -2,6 +2,7 @@
 @using MudBlazor
 @using ChartJs.Blazor.ChartJS.LineChart
 @using ChartJs.Blazor.ChartJS.Common
+@using MyApplication.Client.Services
 @inject DeviceDataService DeviceData
 
 <MudContainer>
@@ -71,7 +72,7 @@
 	protected override async Task OnInitializedAsync()
 	{
 
-		DeviceData.OnChange += StateHasChanged; // 🔄 Refresh UI when data updates
+		DeviceData.OnChange += StateHasChanged; 
 		DeviceData.OnChange += HandleDataUpdate;
 		await DeviceData.InitializeAsync();
 
@@ -99,13 +100,13 @@
 		InvokeAsync(StateHasChanged); // 🔄 Ensure UI updates on WebSocket message
 	}
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (firstRender)
-		{
-			await DeviceData.ConnectWebSocketAsync();
-		}
-	}
+	// protected override async Task OnAfterRenderAsync(bool firstRender)
+	// {
+	// 	if (firstRender)
+	// 	{
+	// 		await DeviceData.ConnectWebSocketAsync();
+	// 	}
+	// }
 	// Labels for X-Axis remain fixed (January to December)
 	private readonly string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
@@ -141,8 +142,7 @@
 		new ChartSeries() { Name = "Category B", Data = new double[] { 15000, 25000, 35000 } },
 		new ChartSeries() { Name = "Category C", Data = new double[] { 10000, 20000, 30000 } },
 	};
-
-
+	
 }
 
 

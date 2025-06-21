@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const awsIot = require("aws-iot-device-sdk");
+const mqtt = require("mqtt");
 const { Server } = require("socket.io");
 const http = require("http");
 require("dotenv").config();
@@ -15,26 +15,28 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-// ✅ Connect to AWS IoT Core
-const device = awsIot.device({
-  keyPath: "./certs/private.pem",
-  certPath: "./certs/certificate.pem",
-  caPath: "./certs/AmazonRootCA1.pem",
-  clientId: "iotClient",
-  host: process.env.AWS_IOT_ENDPOINT, // Your AWS IoT endpoint
+//  MQTT HiveMQ Configuration
+const brokerUrl = "mqtts://c228b1fa8c334dbfa59cce52d95da105.s1.eu.hivemq.cloud";
+const username = "panha";
+const password = "Panha@123";
+
+//  Connect to HiveMQ
+const client = mqtt.connect(brokerUrl, {
+  username,
+  password,
 });
 
-let sensorData = {}; // Store latest sensor data
+//  Store sensor data & handle timeouts
+let sensorData = {};
 let timeoutHandle = null;
+let isTimedOut = false;
 const TIMEOUT_MS = 1000; // 1 second
-let isTimedOut = false; // Prevent multiple emits
 
 function resetTimeout() {
   if (timeoutHandle) clearTimeout(timeoutHandle);
-
   timeoutHandle = setTimeout(() => {
     if (!isTimedOut) {
-      console.warn("⚠️ No data currently not recieived from device.");
+      console.warn("⚠️ No data received from device.");
       io.emit("sensorTimeout", {
         message: "No data received from device in 1 second.",
       });
@@ -43,38 +45,48 @@ function resetTimeout() {
   }, TIMEOUT_MS);
 }
 
-device.on("connect", () => {
-  console.log("✅ Connected to AWS IoT Core!");
-  device.subscribe("iot/sensor/data"); // ✅ Subscribe to IoT topic
+// ✅ Handle MQTT Connection
+client.on("connect", () => {
+  console.log("✅ Connected to HiveMQ!");
+  client.subscribe("iot/sensor/data", (err) => {
+    if (err) {
+      console.error("❌ Subscribe error:", err);
+    } else {
+      console.log("📡 Subscribed to topic: iot/sensor/data");
+    }
+  });
 });
 
-device.on("message", (topic, payload) => {
-  sensorData = JSON.parse(payload.toString());
-  console.log("📩 Received:", sensorData);
+// ✅ Handle Incoming MQTT Messages
+client.on("message", (topic, payload) => {
+  try {
+    sensorData = JSON.parse(payload.toString());
+    console.log("📩 Received:", sensorData);
 
-  // 🔥 Send real-time data to Blazor clients
-  io.emit("sensorData", sensorData);
+    // 🔁 Emit to WebSocket clients
+    io.emit("sensorData", sensorData);
+    resetTimeout();
 
-  resetTimeout();
-
-  // Reset timeout flag if data is back
-  if (isTimedOut) {
-    console.log("✅ Data resumed.");
-    io.emit("sensorResumed", { message: "Data resumed." });
-    isTimedOut = false;
+    if (isTimedOut) {
+      console.log("✅ Data resumed.");
+      io.emit("sensorResumed", { message: "Data resumed." });
+      isTimedOut = false;
+    }
+  } catch (err) {
+    console.error("❌ Failed to parse MQTT payload:", err.message);
   }
 });
 
-// ✅ REST API Endpoint to Fetch IoT Data
+// ✅ REST API Endpoint to Get Latest Sensor Data
 app.get("/api/iot-data", (req, res) => {
   res.json(sensorData);
 });
 
-// ✅ WebSocket Connection Handling
+// ✅ WebSocket Connections
 io.on("connection", (socket) => {
   console.log("⚡ Blazor client connected:", socket.id);
 
-  // Send latest sensor data on connection
+  // Immediately send latest sensor data on connect
   socket.emit("sensorData", sensorData);
 
   socket.on("disconnect", () => {
@@ -84,4 +96,6 @@ io.on("connection", (socket) => {
 
 // ✅ Start Server
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+server.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);

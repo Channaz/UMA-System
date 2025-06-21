@@ -1,4 +1,9 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
+    gaugeCanvas.gauge = new RadialGauge({
+        renderTo: gaugeCanvas,
+        minValue: 0,
+        maxValue: 100,
+    }).draw();
     //initializeGauge();
     updateGaugeValue(value);
 });
@@ -6,7 +11,7 @@
 if (!Array.prototype.forEach) {
     Array.prototype.forEach = function (cb) {
         var i = 0, s = this.length;
-        for (; i < s; i++) {
+        for (i=0; i < s; i++) {
             cb && cb(this[i], i, this);
         }
     };

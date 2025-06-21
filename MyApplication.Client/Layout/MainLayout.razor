@@ -1,11 +1,10 @@
 ﻿@inherits LayoutComponentBase
 @inject IJSRuntime JS
 @using System.Net.Http
+@using MyApplication.Client.Services
 @inject HttpClient Http
 @inject WebSocketService Web
 @inject DeviceDataService DeviceData
-<script src="~/js/gauge.js"></script>
-<script src="~/js/guage.min.js"></script>
 
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="@_isDarkMode" />
@@ -94,8 +93,8 @@
 
 	private void HandleDataChange()
 	{
-		showWarning = DeviceData.IsDataFetchTimedOut;
-		Console.WriteLine(showWarning); // Debug log
+		// showWarning = DeviceData.IsDataFetchTimedOut;
+		// Console.WriteLine(showWarning); // Debug log
 		InvokeAsync(StateHasChanged); // 🔄 Refresh UI on data change
 
 		// if (showWarning)
@@ -106,13 +105,13 @@
 		// }
 	}
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (firstRender)
-		{
-			await DeviceData.ConnectWebSocketAsync(); // Connect WebSocket once
-		}
-	}
+	// protected override async Task OnAfterRenderAsync(bool firstRender)
+	// {
+	// 	if (firstRender)
+	// 	{
+	// 		await DeviceData.ConnectWebSocketAsync(); // Connect WebSocket once
+	// 	}
+	// }
 
 	public void Dispose()
 	{

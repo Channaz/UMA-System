@@ -5,6 +5,7 @@
 @using System.Net.Http
 @inject HttpClient Http
 @inject WebSocketService Web
+@using MyApplication.Client.Services
 @inject DeviceDataService DeviceData
 
 @rendermode InteractiveAuto
@@ -74,13 +75,13 @@
 		await DeviceData.InitializeAsync();
 	}
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (firstRender)
-		{
-			await DeviceData.ConnectWebSocketAsync();
-		}
-	}
+	// protected override async Task OnAfterRenderAsync(bool firstRender)
+	// {
+	// 	if (firstRender)
+	// 	{
+	// 		await DeviceData.ConnectWebSocketAsync();
+	// 	}
+	// }
 	
 
 	// private DeviceData? deviceData;
