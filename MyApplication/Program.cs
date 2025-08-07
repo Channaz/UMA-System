@@ -20,7 +20,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddAntiforgery();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddControllers();
-builder.Services.AddScoped<WebSocketService>();
+//builder.Services.AddScoped<WebSocketService>();
 builder.Services.AddScoped<DeviceDataService>();
 
 //builder.Services.AddHttpClient("API", client =>

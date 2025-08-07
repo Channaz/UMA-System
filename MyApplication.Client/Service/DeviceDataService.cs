@@ -24,9 +24,9 @@ namespace MyApplication.Client.Service
 			_http = http ?? throw new ArgumentNullException(nameof(http));
 			_js = js;
 
-			if (_http.BaseAddress == null)
-				_http.BaseAddress = new Uri("http://localhost:3000/");
-		}
+            if (_http.BaseAddress == null)
+                _http.BaseAddress = new Uri("http://175.100.42.28:3000/");
+        }
 
 		//for alert message
 		public async Task InitializeAsync()
@@ -105,8 +105,8 @@ namespace MyApplication.Client.Service
 			if (!_isInitialized)
 			{
 				_dotNetRef = DotNetObjectReference.Create(this);
-				await _js.InvokeVoidAsync("socketFunctions.connect", _dotNetRef);
-				_isInitialized = true;
+                await _js.InvokeVoidAsync("socketFunctions.connect", "http://175.100.42.28:3000", _dotNetRef);
+                _isInitialized = true;
 			}
 		}
 
