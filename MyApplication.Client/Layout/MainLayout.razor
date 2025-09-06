@@ -4,8 +4,6 @@
 @inject HttpClient Http
 @* @inject WebSocketService Web *@
 @inject DeviceDataService DeviceData
-<script src="~/js/gauge.js"></script>
-<script src="~/js/guage.min.js"></script>
 
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="@_isDarkMode" />
@@ -13,176 +11,164 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudLayout>
-	@if (DeviceData.IsDataFetchTimedOut)
-	{
-		<MudAlert Severity="Severity.Warning" Elevation="2" Dense="true"
-				  Style="
-				position: fixed;
-				top: 50%;
-				left: 50%;
-				background-color: white;
-				transform: translate(-50%, -50%);
-				z-index: 9999;
-				text-align: center;
-				min-width: 300px;"
-				  Visible="@showWarning">
-			Warning: No data received from the device in 1 second!
-		</MudAlert>
-	}
-	<MudAppBar Elevation="1" Style="background-color:#ffffff;">
-		<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-		<img src="images/UMA_LOGO.jpg" alt="" width="150" />
-		<MudSpacer />
+@if (_isLoaded)
+{
+    <MudLayout>
+        @if (DeviceData.IsDataFetchTimedOut)
+        {
+            <MudAlert Severity="Severity.Warning" Elevation="2" Dense="true"
+                      Style="
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    background-color: white;
+                    transform: translate(-50%, -50%);
+                    z-index: 9999;
+                    text-align: center;
+                    min-width: 300px;"
+                      Visible="@showWarning">
+                Warning: No data received from the device in 1 second!
+            </MudAlert>
+        }
+        <MudAppBar Elevation="1" Style="background-color:#ffffff;">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+            <img src="images/UMA_LOGO.jpg" alt="" width="150" />
+            <MudSpacer />
 
-		<MudForm Class="" Style="width:500px;">
-			<MudTextField @bind-Value="TextValue" Style="color:rgba(26,26,39,255); background-color:transparent; border:1px solid #1a1a27; border-radius:5px;" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
-			<MudIcon Icon="fa fa-search" Class="ml-5 mt-3" Style="position:absolute; right:470px" />
-		</MudForm>
-		<MudSpacer />
-		<MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Default" OnClick="@DarkModeToggle" />
-		<MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
-	</MudAppBar>
-	<MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
-		<NavMenu />
-	</MudDrawer>
-	<MudMainContent Class="mt-16 pa-4">
-		@Body
-	</MudMainContent>
-</MudLayout>
-
-
-<div id="blazor-error-ui">
-	An unhandled error has occurred.
-	<a href="" class="reload">Reload</a>
-	<a class="dismiss">🗙</a>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
-<script src="chart.js"></script> <!-- Ensure chart.js exists in wwwroot -->
-@code {
-	private bool _drawerOpen = true;
-	private bool _isDarkMode = true;
-
-	private MudTheme? _theme = null;
-
-	/// <summary>
-	///
-	/// </summary>
-	private bool showWarning = false;
-
-
-	protected override void OnInitialized()
-	{
-		base.OnInitialized();
-
-		_theme = new()
-			{
-				PaletteLight = _lightPalette,
-				PaletteDark = _darkPalette,
-				LayoutProperties = new LayoutProperties()
-			};
-
-	}
-
-	protected override async Task OnInitializedAsync()
-	{
-		DeviceData.OnChange += HandleDataChange; // 🔄 Refresh UI when data updates
-		await DeviceData.InitializeAsync(); // Fetch data only once
-	}
-
-	private void HandleDataChange()
-	{
-		showWarning = DeviceData.IsDataFetchTimedOut;
-		Console.WriteLine(showWarning); // Debug log
-		InvokeAsync(StateHasChanged); // 🔄 Refresh UI on data change
-
-		// if (showWarning)
-		// {
-		// 	Task.Delay(5000);
-		// 	showWarning = false;
-		// 	StateHasChanged();
-		// }
-	}
-
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (firstRender)
-		{
-			await DeviceData.ConnectWebSocketAsync(); // Connect WebSocket once
-		}
-	}
-
-	public void Dispose()
-	{
-		DeviceData.OnChange -= StateHasChanged; // ❌ Prevent memory leaks
-	}
-
-
-
-	//default code
-	private void DrawerToggle()
-	{
-		_drawerOpen = !_drawerOpen;
-	}
-
-	private void DarkModeToggle()
-	{
-		_isDarkMode = !_isDarkMode;
-	}
-
-
-	private readonly PaletteLight _lightPalette = new()
-		{
-			Black = "#110e2d",
-			AppbarText = "#424242",
-			AppbarBackground = "rgba(255,255,255,0.8)",
-			DrawerBackground = "#ffffff",
-			GrayLight = "#e8e8e8",
-			GrayLighter = "#f9f9f9",
-		};
-
-	private readonly PaletteDark _darkPalette = new()
-		{
-			Primary = "#7e6fff",
-			Surface = "#1e1e2d",
-			Background = "#1a1a27",
-			BackgroundGray = "#151521",
-			AppbarText = "#92929f",
-			AppbarBackground = "rgba(26,26,39,0.8)",
-			DrawerBackground = "#1a1a27",
-			ActionDefault = "#74718e",
-			ActionDisabled = "#9999994d",
-			ActionDisabledBackground = "#605f6d4d",
-			TextPrimary = "#b2b0bf",
-			TextSecondary = "#92929f",
-			TextDisabled = "#ffffff33",
-			DrawerIcon = "#92929f",
-			DrawerText = "#92929f",
-			GrayLight = "#2a2833",
-			GrayLighter = "#1e1e2d",
-			Info = "#4a86ff",
-			Success = "#3dcb6c",
-			Warning = "#ffb545",
-			Error = "#ff3f5f",
-			LinesDefault = "#33323e",
-			TableLines = "#33323e",
-			Divider = "#292838",
-			OverlayLight = "#1e1e2d80",
-		};
-
-	public string DarkLightModeButtonIcon => _isDarkMode switch
-	{
-		true => Icons.Material.Rounded.AutoMode,
-		false => Icons.Material.Outlined.DarkMode,
-	};
-
-
-	public string? TextValue { get; set; }
-
-
-
+            <MudForm Class="" Style="width:500px;">
+                <MudTextField @bind-Value="TextValue" Style="color:rgba(26,26,39,255); background-color:transparent; border:1px solid #1a1a27; border-radius:5px;" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                <MudIcon Icon="fa fa-search" Class="ml-5 mt-3" Style="position:absolute; right:470px" />
+            </MudForm>
+            <MudSpacer />
+            <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Default" OnClick="@DarkModeToggle" />
+            <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+        </MudAppBar>
+        <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+            <NavMenu />
+        </MudDrawer>
+        <MudMainContent Class="mt-16 pa-4">
+            @Body
+        </MudMainContent>
+    </MudLayout>
 }
 
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+<script src="js/socket.js"></script>
+<script src="js/blazor-js-utils.js"></script>
+<script src="js/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+<script src="js/Chat.js"></script> <!-- Ensure chart.js exists in wwwroot -->
+<script src="js/gauge.js"></script>
+<script src="js/guage.min.js"></script>
 
+@code {
+    private bool _drawerOpen = true;
+    private bool _isDarkMode = true;
+    private bool _isLoaded = false; // Add this new field
+
+    private MudTheme? _theme = null;
+    private bool showWarning = false;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _theme = new()
+            {
+                PaletteLight = _lightPalette,
+                PaletteDark = _darkPalette,
+                LayoutProperties = new LayoutProperties()
+            };
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        DeviceData.OnChange += HandleDataChange; // 🔄 Refresh UI when data updates
+        await DeviceData.InitializeAsync(); // Fetch data only once
+    }
+
+    private void HandleDataChange()
+    {
+        showWarning = DeviceData.IsDataFetchTimedOut;
+        Console.WriteLine(showWarning); // Debug log
+        InvokeAsync(StateHasChanged); // 🔄 Refresh UI on data change
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await DeviceData.ConnectWebSocketAsync(); // Connect WebSocket once
+            _isLoaded = true; // Set the flag to true
+            StateHasChanged(); // Re-render the component to show the layout
+        }
+    }
+
+    public void Dispose()
+    {
+        DeviceData.OnChange -= StateHasChanged; // ❌ Prevent memory leaks
+    }
+
+    //default code
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void DarkModeToggle()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+
+    private readonly PaletteLight _lightPalette = new()
+        {
+            Black = "#110e2d",
+            AppbarText = "#424242",
+            AppbarBackground = "rgba(255,255,255,0.8)",
+            DrawerBackground = "#ffffff",
+            GrayLight = "#e8e8e8",
+            GrayLighter = "#f9f9f9",
+        };
+
+    private readonly PaletteDark _darkPalette = new()
+        {
+            Primary = "#7e6fff",
+            Surface = "#1e1e2d",
+            Background = "#1a1a27",
+            BackgroundGray = "#151521",
+            AppbarText = "#92929f",
+            AppbarBackground = "rgba(26,26,39,0.8)",
+            DrawerBackground = "#1a1a27",
+            ActionDefault = "#74718e",
+            ActionDisabled = "#9999994d",
+            ActionDisabledBackground = "#605f6d4d",
+            TextPrimary = "#b2b0bf",
+            TextSecondary = "#92929f",
+            TextDisabled = "#ffffff33",
+            DrawerIcon = "#92929f",
+            DrawerText = "#92929f",
+            GrayLight = "#2a2833",
+            GrayLighter = "#1e1e2d",
+            Info = "#4a86ff",
+            Success = "#3dcb6c",
+            Warning = "#ffb545",
+            Error = "#ff3f5f",
+            LinesDefault = "#33323e",
+            TableLines = "#33323e",
+            Divider = "#292838",
+            OverlayLight = "#1e1e2d80",
+        };
+
+    public string DarkLightModeButtonIcon => _isDarkMode switch
+    {
+        true => Icons.Material.Rounded.AutoMode,
+        false => Icons.Material.Outlined.DarkMode,
+    };
+
+    public string? TextValue { get; set; }
+}

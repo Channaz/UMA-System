@@ -1,9 +1,8 @@
 const express = require("express");
 const cors = require("cors");
-const mqtt = require("mqtt"); // ✅ use mqtt.js instead of aws-iot-device-sdk
+const awsIot = require("aws-iot-device-sdk");
 const { Server } = require("socket.io");
 const http = require("http");
-const fs = require("fs");
 require("dotenv").config();
 
 // ✅ Initialize Express & HTTP Server
@@ -16,31 +15,26 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-// ✅ Connect to your MQTT Broker with mTLS
-const options = {
-  host: "175.100.42.28",
-  port: 8884,
-  protocol: "mqtts",
-  ca: fs.readFileSync("./certs/tls/ca.crt"), // CA cert
-  cert: fs.readFileSync("./certs/tls/client.crt"), // Client cert
-  key: fs.readFileSync("./certs/tls/client.key"), // Client key
-  rejectUnauthorized: true, // Verify broker cert
-  clientId: "mqttNodeClient_" + Math.random().toString(16).substr(2, 8),
-};
+// ✅ Connect to AWS IoT Core
+const device = awsIot.device({
+  keyPath: "./certs/private.pem",
+  certPath: "./certs/certificate.pem",
+  caPath: "./certs/AmazonRootCA1.pem",
+  clientId: "iotClient",
+  host: process.env.AWS_IOT_ENDPOINT, // Your AWS IoT endpoint
+});
 
-const client = mqtt.connect(options);
-
-let sensorData = {};
+let sensorData = {}; // Store latest sensor data
 let timeoutHandle = null;
-const TIMEOUT_MS = 3000; // 1 second
-let isTimedOut = false;
+const TIMEOUT_MS = 1000; // 1 second
+let isTimedOut = false; // Prevent multiple emits
 
 function resetTimeout() {
   if (timeoutHandle) clearTimeout(timeoutHandle);
 
   timeoutHandle = setTimeout(() => {
     if (!isTimedOut) {
-      console.warn("⚠️ No data received from device.");
+      console.warn("⚠️ No data currently not recieived from device.");
       io.emit("sensorTimeout", {
         message: "No data received from device in 1 second.",
       });
@@ -49,20 +43,21 @@ function resetTimeout() {
   }, TIMEOUT_MS);
 }
 
-client.on("connect", () => {
-  console.log("✅ Connected to MQTT broker with mTLS!");
-  client.subscribe("iot/sensor/data", (err) => {
-    if (err) console.error("❌ Subscribe error:", err);
-  });
+device.on("connect", () => {
+  console.log("✅ Connected to AWS IoT Core!");
+  device.subscribe("iot/sensor/data"); // ✅ Subscribe to IoT topic
 });
 
-client.on("message", (topic, payload) => {
+device.on("message", (topic, payload) => {
   sensorData = JSON.parse(payload.toString());
   console.log("📩 Received:", sensorData);
 
+  // 🔥 Send real-time data to Blazor clients
   io.emit("sensorData", sensorData);
+
   resetTimeout();
 
+  // Reset timeout flag if data is back
   if (isTimedOut) {
     console.log("✅ Data resumed.");
     io.emit("sensorResumed", { message: "Data resumed." });
@@ -75,10 +70,11 @@ app.get("/api/iot-data", (req, res) => {
   res.json(sensorData);
 });
 
-// ✅ WebSocket Handling
+// ✅ WebSocket Connection Handling
 io.on("connection", (socket) => {
   console.log("⚡ Blazor client connected:", socket.id);
 
+  // Send latest sensor data on connection
   socket.emit("sensorData", sensorData);
 
   socket.on("disconnect", () => {

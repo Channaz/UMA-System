@@ -66,11 +66,16 @@
 @code {
 
 	// Card data
-	// public static DeviceData? devicedata { get; set; }
+	public static DeviceData? devicedata { get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
-		DeviceData.OnChange += StateHasChanged; // 🔄 Refresh UI when data updates
+		// 🔄 Refresh UI when data updates
+		DeviceData.OnChange += () =>
+		{
+			// This is the crucial part: Call StateHasChanged on the UI thread
+			InvokeAsync(() => StateHasChanged());
+		};
 		await DeviceData.InitializeAsync();
 	}
 

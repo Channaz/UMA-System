@@ -25,7 +25,7 @@ namespace MyApplication.Client.Service
 			_js = js;
 
             if (_http.BaseAddress == null)
-                _http.BaseAddress = new Uri("http://175.100.42.28:3000/");
+                _http.BaseAddress = new Uri("http://localhost:3000");
         }
 
 		//for alert message
@@ -43,7 +43,7 @@ namespace MyApplication.Client.Service
 
 				//IsDataFetchTimedOut = false;
 
-				//Console.WriteLine("🟢 Starting data fetch...");
+				Console.WriteLine("🟢 Starting data fetch..." + DeviceData.Device);
 
 				//var data = await GetDeviceDataAsync(cts.Token); // Try to fetch data with timeout
 				//if (data == null)
@@ -104,32 +104,50 @@ namespace MyApplication.Client.Service
 		{
 			if (!_isInitialized)
 			{
+				// Poll the JavaScript environment until our object is ready.
+				while (!await _js.InvokeAsync<bool>("blazorJsUtils.isSocketFunctionsLoaded"))
+				{
+					// Wait a short time before trying again to prevent CPU overuse.
+					await Task.Delay(50);
+				}
+
 				_dotNetRef = DotNetObjectReference.Create(this);
-                await _js.InvokeVoidAsync("socketFunctions.connect", "http://175.100.42.28:3000", _dotNetRef);
-                _isInitialized = true;
+				// It's now safe to call the function.
+				await _js.InvokeVoidAsync("socketFunctions.connect", "http://localhost:3000", _dotNetRef);
+				Console.WriteLine("🔌 WebSocket connected.");
+				_isInitialized = true;
 			}
 		}
 
-		[JSInvokable("ReceiveMessage")]
-		public void ReceiveMessage(string jsonData)
-		{
-			IsDataFetchTimedOut = false;
-			DeviceData = System.Text.Json.JsonSerializer.Deserialize<DeviceData>(jsonData);
-			Console.WriteLine($"🔄 WebSocket Updated Data: {DeviceData}");
+        [JSInvokable("ReceiveMessage")]
+        public async Task ReceiveMessage(string jsonData)
+        {
+            IsDataFetchTimedOut = false;
+            DeviceData = System.Text.Json.JsonSerializer.Deserialize<DeviceData>(jsonData);
+            Console.WriteLine($"🔄 WebSocket Updated Data: {DeviceData}");
 
-			OnChange?.Invoke(); // 🔄 Notify UI
-		}
+            // Use InvokeAsync to ensure the UI update is on the correct thread.
+            await _js.InvokeVoidAsync("dotnet:syncronizationContext", "InvokeOnMainThread", () =>
+            {
+                OnChange?.Invoke();
+            });
+        }
 
-		[JSInvokable("HandleTimeout")]
-		public void HandleTimeout()
-		{
-			IsDataFetchTimedOut = true;
-			Console.WriteLine("⚠️ No data received via WebSocket in 1 second.");
-			OnChange?.Invoke(); // Update UI
-		}
+        [JSInvokable("HandleTimeout")]
+        public async Task HandleTimeout()
+        {
+            IsDataFetchTimedOut = true;
+            Console.WriteLine("⚠️ No data received via WebSocket in 1 second.");
 
-		//set total values for the building
-		public (double voltage, double current, double power, double energy) GetBuildingTotals()
+            // Use InvokeAsync to ensure the UI update is on the correct thread.
+            await _js.InvokeVoidAsync("dotnet:syncronizationContext", "InvokeOnMainThread", () =>
+            {
+                OnChange?.Invoke(); // Update UI
+            });
+        }
+
+        //set total values for the building
+        public (double voltage, double current, double power, double energy) GetBuildingTotals()
 		{
 			double totalVoltage = 0, totalCurrent = 0, totalPower = 0, totalEnergy = 0;
 

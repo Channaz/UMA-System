@@ -20,11 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\js\blazor-js-utils.js" />
     <Content Remove="wwwroot\js\gauge.min.js" />
     <Content Remove="wwwroot\js\socket.io.js" />
   </ItemGroup>
 
   <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\js\blazor-js-utils.js" />
     <_ContentIncludedByDefault Remove="wwwroot\js\gauge.min.js" />
     <_ContentIncludedByDefault Remove="wwwroot\js\socket.io.js" />
   </ItemGroup>
@@ -50,6 +52,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\js\blazor-js-utils.js" />
     <None Include="wwwroot\js\socket.io.js" />
   </ItemGroup>
 

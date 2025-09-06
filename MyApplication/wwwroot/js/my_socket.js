@@ -26,7 +26,6 @@
         this.socket.on("sensorData", (data) => {
             resetTimeout();
             dotNetHelper.invokeMethodAsync("ReceiveMessage", JSON.stringify(data));
-            console.log(data)
         });
 
         console.log("✅ WebSocket Connected");
