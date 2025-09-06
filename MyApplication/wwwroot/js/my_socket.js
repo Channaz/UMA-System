@@ -1,34 +1,39 @@
 ﻿window.socketFunctions = {
     socket: null,
-    timeoutId: null,
 
     connect: function (url, dotNetHelper) {
-        // Build correct API URL
+        // Build correct API URL based on the current hostname, port 3000
         const apiUrl = `${window.location.protocol}//${window.location.hostname}:3000`;
 
+        // Initialize the socket.io client
         this.socket = io(apiUrl);
 
-        // Ensure WebSocket is only listening once
+        // Disconnect any previous listeners to prevent duplicates
         this.socket.off("sensorData");
+        this.socket.off("sensorTimeout");
+        this.socket.off("sensorResumed");
 
-        // Timeout reset function
-        const resetTimeout = () => {
-            if (this.timeoutId) {
-                clearTimeout(this.timeoutId);
-            }
-
-            this.timeoutId = setTimeout(() => {
-                // Timeout triggered: No data received in 1 second
-                dotNetHelper.invokeMethodAsync("HandleTimeout");
-            }, 1000);
-        };
-
+        // Listen for real-time sensor data from the server
         this.socket.on("sensorData", (data) => {
-            resetTimeout();
+            // The server is now responsible for handling timeouts.
+            // We just forward the data to the Blazor app.
             dotNetHelper.invokeMethodAsync("ReceiveMessage", JSON.stringify(data));
+            console.log("Receiving real-time data:", data);
         });
 
-        console.log("✅ WebSocket Connected");
+        // Listen for a timeout event from the server
+        this.socket.on("sensorTimeout", (message) => {
+            console.warn("⚠️ Server-side timeout detected:", message);
+            dotNetHelper.invokeMethodAsync("HandleTimeout");
+        });
+
+        // Listen for a data resumed event from the server
+        this.socket.on("sensorResumed", (message) => {
+            console.log("✅ Server reports data has resumed:", message);
+            dotNetHelper.invokeMethodAsync("HandleDataResumed");
+        });
+
+        console.log("✅ WebSocket connection attempt initiated...");
     },
 
     disconnect: function () {
@@ -36,11 +41,6 @@
             this.socket.disconnect();
             this.socket = null;
             console.log("❌ WebSocket Disconnected");
-        }
-
-        // Clear any timeout
-        if (this.timeoutId) {
-            clearTimeout(this.timeoutId);
         }
     }
 };

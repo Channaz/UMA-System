@@ -4,24 +4,27 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />  
+    <title>UMA - System</title>
+    @* <link rel="icon" type="image/x-icon" href="./images/small_logo.ico"> *@
+    <base href="/" />
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
-    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />  
-    <link rel="icon" type="image/ico" href="favicon.ico" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script> <!-- ✅ Needed for mudElementRef -->
+    <link rel="icon" type="image/ico" href="./images/small_logo.ico" />
     <link href="./css/app.css" rel="stylesheet" />
     <HeadOutlet @rendermode="InteractiveAuto" />
 </head>
 
 <body>
     <Routes @rendermode="InteractiveAuto" />
-    
+
+    <script src="_framework/blazor.web.js"></script>
     <script src="./js/Chat.js"></script>
     <script src="./js/gauge.min.js"></script>
     <script src="./js/gauge.js"></script>
     <script src="js/my_socket.js"></script>
     <script src="js/my_socket.io.js"></script>
-    <script src="./js/blazor-js-utils"></script>
-    <script src="_framework/blazor.web.js"></script>
+    <script src="./js/blazor-js-utils.js"></script>
 </body>
-
 </html>

@@ -12,7 +12,7 @@
     filter:brightness(0.8);
     position:relative;
     border-radius:5px;
-    top:0;
+    top: 0;
 }
 
      .top-text {
@@ -326,4 +326,58 @@
     align-items: center; /* Center horizontally */
     justify-content: center; /* Center vertically */
     
+}
+
+/*.custom-row {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    padding-top: 1.5rem;
+    width: 100%;
+    align-items: flex-start;
+}
+
+.custom-column {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 500px;
+}
+
+.chart-container {
+    width: 100%;
+    max-width: 400px;
+}
+
+.gauge-container-wrapper {
+    width: 100%;
+    max-width: 400px;
+}
+
+@media (max-width: 768px) {
+    .custom-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .custom-column {
+        width: 100%;
+    }
+}*/
+
+.search-icon {
+    z-index: 1;
+}
+
+/* Optional: Add hover effect for better UX */
+.mud-input-root:hover + .search-icon {
+    color: rgba(26,26,39,0.8) !important;
+}
+
+/* Ensure the icon stays properly positioned on different screen sizes */
+@media (max-width: 768px) {
+    .search-icon {
+        right: 10px;
+    }
 }

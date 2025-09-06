@@ -2,7 +2,6 @@
 @inject IJSRuntime JS
 @using System.Net.Http
 @inject HttpClient Http
-@* @inject WebSocketService Web *@
 @inject DeviceDataService DeviceData
 
 
@@ -11,6 +10,7 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
+@* The core fix is here: we only render the MudLayout after the first render cycle. *@
 @if (_isLoaded)
 {
     <MudLayout>
@@ -27,7 +27,7 @@
                     text-align: center;
                     min-width: 300px;"
                       Visible="@showWarning">
-                Warning: No data received from the device in 1 second!
+                Warning: No data received from the device in 3 second!
             </MudAlert>
         }
         <MudAppBar Elevation="1" Style="background-color:#ffffff;">
@@ -35,15 +35,31 @@
             <img src="images/UMA_LOGO.jpg" alt="" width="150" />
             <MudSpacer />
 
-            <MudForm Class="" Style="width:500px;">
-                <MudTextField @bind-Value="TextValue" Style="color:rgba(26,26,39,255); background-color:transparent; border:1px solid #1a1a27; border-radius:5px;" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
-                <MudIcon Icon="fa fa-search" Class="ml-5 mt-3" Style="position:absolute; right:470px" />
+            <MudForm Class="" Style="width:500px; position:relative;">
+                <div style="position:relative; display:inline-block; width:100%;">
+                    <MudTextField @bind-Value="TextValue"
+                                  Placeholder="Search..."
+                                  Style="color:rgba(26,26,39,255); background-color:transparent; border:1px solid #1a1a27; border-radius:5px; padding-right:40px;"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense">
+                    </MudTextField>
+                    <MudIcon Icon="fa fa-search"
+                             Class="search-icon"
+                             Style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none; color:rgba(26,26,39,0.6);" />
+                </div>
             </MudForm>
             <MudSpacer />
             <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Default" OnClick="@DarkModeToggle" />
             <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
         </MudAppBar>
-        <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+        @* <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+            <NavMenu />
+        </MudDrawer> *@
+        <MudDrawer Open="@_drawerOpen"
+                   OpenChanged="OnDrawerOpenChanged"
+                   Variant="DrawerVariant.Persistent"
+                   ClipMode="DrawerClipMode.Always"
+                   Elevation="2">
             <NavMenu />
         </MudDrawer>
         <MudMainContent Class="mt-16 pa-4">
@@ -51,12 +67,20 @@
         </MudMainContent>
     </MudLayout>
 }
+else
+{
+    @* You can optionally show a loading indicator here *@
+    <p>Loading application...</p>
+}
+
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+<link href="#" rel="css/app.css" />
+
 <script src="js/socket.js"></script>
 <script src="js/blazor-js-utils.js"></script>
 <script src="js/socket.io.js"></script>
@@ -67,9 +91,19 @@
 <script src="js/guage.min.js"></script>
 
 @code {
+    // The key change: _drawerOpen is now a static field.
     private bool _drawerOpen = true;
     private bool _isDarkMode = true;
     private bool _isLoaded = false; // Add this new field
+
+    // called when user clicks backdrop/ESC, or you toggle via the button
+    private void OnDrawerOpenChanged(bool open)
+    {
+        _drawerOpen = open;
+    }
+
+    // existing toggle
+    private void DrawerToggle() => _drawerOpen = !_drawerOpen;
 
     private MudTheme? _theme = null;
     private bool showWarning = false;
@@ -88,37 +122,38 @@
 
     protected override async Task OnInitializedAsync()
     {
-        DeviceData.OnChange += HandleDataChange; // 🔄 Refresh UI when data updates
-        await DeviceData.InitializeAsync(); // Fetch data only once
+        DeviceData.OnChange += HandleDataChange;
+        await DeviceData.InitializeAsync();
     }
 
     private void HandleDataChange()
     {
         showWarning = DeviceData.IsDataFetchTimedOut;
-        Console.WriteLine(showWarning); // Debug log
-        InvokeAsync(StateHasChanged); // 🔄 Refresh UI on data change
+        Console.WriteLine(showWarning);
+        InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await DeviceData.ConnectWebSocketAsync(); // Connect WebSocket once
+            await DeviceData.ConnectWebSocketAsync();
             _isLoaded = true; // Set the flag to true
-            StateHasChanged(); // Re-render the component to show the layout
+            StateHasChanged(); // Trigger a re-render to show the layout
         }
     }
 
     public void Dispose()
     {
-        DeviceData.OnChange -= StateHasChanged; // ❌ Prevent memory leaks
+        DeviceData.OnChange -= HandleDataChange;
     }
 
     //default code
-    private void DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
+    // The DrawerToggle method now updates the static field.
+    // private void DrawerToggle()
+    // {
+    //     _drawerOpen = !_drawerOpen;
+    // }
 
     private void DarkModeToggle()
     {

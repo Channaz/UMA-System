@@ -1,119 +1,96 @@
 ﻿@page "/counter"
-@* @inject MqttService MqttService *@
 @inject IJSRuntime JS
 
 @using System.Net.Http
 @inject HttpClient Http
-@* @inject WebSocketService Web *@
 @inject DeviceDataService DeviceData
+@implements IDisposable
 
 @rendermode InteractiveAuto
 <link href="/css/UnitStyle.css" rel="stylesheet" />
 
 
-<MudPaper Class="pa-4 mt-4">
-	<h1>Dubai Building</h1>
+<MudPaper Class="pa-4">
+    <h1>Dubai Building</h1>
 
-	<div class="form">
-		<span>Room Number</span>
-		<input class="input" placeholder="Room Input" required="" type="text">
-		<span class="input-border"></span>
+    <div class="form">
+        <span>Room Number</span>
+        <input class="input" placeholder="Room Input" required="" type="text">
+        <span class="input-border"></span>
 
-	</div>
-	<div class="mt-4 d-flex justify-content-between">
-		<MudButton Variant="Variant.Filled" DropShadow="false" Color="Color.Primary"><MudIcon Class="mr-5" Icon="fa-solid fa-plus" Size="Size.Small"></MudIcon>Add New Room</MudButton>
-		<MudButton Class="ml-4" Variant="Variant.Filled" DropShadow="false" Color="Color.Primary"><MudIcon Class="mr-5" Icon="fa-solid fa-arrows-rotate" Size="Size.Small"></MudIcon>Refresh</MudButton>
-	</div>
-	<br />
-	<br />
-	<br />
+    </div>
+    <div class="mt-4 d-flex justify-content-between">
+        <MudButton Variant="Variant.Filled" DropShadow="false" Color="Color.Primary"><MudIcon Class="mr-5" Icon="fa-solid fa-plus" Size="Size.Small"></MudIcon>Add New Room</MudButton>
+        <MudButton Class="ml-4" Variant="Variant.Filled" DropShadow="false" Color="Color.Primary"><MudIcon Class="mr-5" Icon="fa-solid fa-arrows-rotate" Size="Size.Small"></MudIcon>Refresh</MudButton>
+    </div>
+    <br />
+    <br />
 
-	@if (DeviceData.DeviceData is null)
-	{
-		<p>Loading data...</p>
-	}
-	else
-	{
-		@foreach (var floor in DeviceData.DeviceData.Floors)
-		{
-			<div class="mt-2">
-				<h2>Floor: @floor.FloorNumber</h2>
-				<div class="card-container">
-					@foreach (var room in floor.Rooms)
-					{
-						@foreach (var (roomNumber, voltage, current, power, energy) in
-								room.RoomNumbers
-								.Zip(room.Voltage, (n, v) => (n, v))
-								.Zip(room.Current, (pair, i) => (pair.n, pair.v, i))
-								.Zip(room.Power, (triplet, p) => (triplet.n, triplet.v, triplet.i, p))
-								.Zip(room.Energy, (quad, e) => (quad.n, quad.v, quad.i, quad.p, e)))
-						{
-							<div class="card">
-								<h3>Room @roomNumber</h3>
-								<h4>Voltage: @voltage V</h4>
-								<h4>Current: @current A</h4>
-								<h4>Power: @power W</h4>
-								<h4>Energy: @energy kWh</h4>
-							</div>
-						}
-					}
-				</div>
-			</div>
-		}
-	}
+    @if (DeviceData.DeviceData is null)
+    {
+        <p>Loading data...</p>
+    }
+    else
+    {
+        @foreach (var floor in DeviceData.DeviceData.Floors)
+        {
+            <div class="mt-2">
+                <h2>Floor: @floor.FloorNumber</h2>
+                <div class="card-container">
+                    @foreach (var room in floor.Rooms)
+                    {
+                        @foreach (var (roomNumber, voltage, current, power, energy) in
+                       room.RoomNumbers
+                       .Zip(room.Voltage, (n, v) => (n, v))
+                       .Zip(room.Current, (pair, i) => (pair.n, pair.v, i))
+                       .Zip(room.Power, (triplet, p) => (triplet.n, triplet.v, triplet.i, p))
+                       .Zip(room.Energy, (quad, e) => (quad.n, quad.v, quad.i, quad.p, e)))
+                        {
+                            <div class="card">
+                                <h3>Room @roomNumber</h3>
+                                <h4>Voltage: @voltage V</h4>
+                                <h4>Current: @current A</h4>
+                                <h4>Power: @power W</h4>
+                                <h4>Energy: @energy kWh</h4>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        }
+    }
 </MudPaper>
 
 @code {
 
-	// Card data
-	public static DeviceData? devicedata { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        // 🔄 Refresh UI when data updates
+        DeviceData.OnChange += () =>
+        {
+            // This is the crucial part: Call StateHasChanged on the UI thread
+            InvokeAsync(() => StateHasChanged());
+        };
+        await DeviceData.InitializeAsync();
+    }
 
-	protected override async Task OnInitializedAsync()
-	{
-		// 🔄 Refresh UI when data updates
-		DeviceData.OnChange += () =>
-		{
-			// This is the crucial part: Call StateHasChanged on the UI thread
-			InvokeAsync(() => StateHasChanged());
-		};
-		await DeviceData.InitializeAsync();
-	}
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await DeviceData.ConnectWebSocketAsync();
+        }
+    }
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (firstRender)
-		{
-			await DeviceData.ConnectWebSocketAsync();
-		}
-	}
-	
-
-	// private DeviceData? deviceData;
-
-	// private bool isInitialized = false; // Ensures JS is only called once
-
-	// protected override async Task OnInitializedAsync()
-	// {
-	// 	// Initial data fetch (optional) from DeviceData
-	// 	deviceData = await Http.GetFromJsonAsync<DeviceData>("api/iot-data");
-	// }
-
-	// protected override async Task OnAfterRenderAsync(bool firstRender)
-	// {
-	// 	if (firstRender && !isInitialized) // Only run once
-	// 	{
-	// 		await JS.InvokeVoidAsync("socketFunctions.connect", DotNetObjectReference.Create(this));
-	// 		isInitialized = true;
-	// 	}
-	// }
-
-	// [JSInvokable("ReceiveMessage")] // set the function Ensure this matches the JavaScript call
-	// public void ReceiveMessage(string jsonData)
-	// {
-	// 	deviceData = System.Text.Json.JsonSerializer.Deserialize<DeviceData>(jsonData);
-	// 	InvokeAsync(StateHasChanged); //  Refresh UI in real-time
-	// }
-
-
+    /// <summary>
+    /// This method is crucial to prevent memory leaks by unsubscribing
+    /// from the OnChange event when the component is disposed.
+    /// </summary>
+    public void Dispose()
+    {
+        DeviceData.OnChange -= () =>
+        {
+            InvokeAsync(() => StateHasChanged());
+        };
+    }
 }
-

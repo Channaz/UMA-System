@@ -7,19 +7,21 @@
 <MudContainer>
 
 
-	<div class="img-back" Style="background-color:white; border-radius:12px;">
-		<h1 class="top-text">Name Building</h1>
-		<div class="text-img">
-			@if (DeviceData.DeviceData is not null)
-			{
-				var (totalV, totalI, totalP, totalE) = DeviceData.GetBuildingTotals();
+	<div class="">
+		<div class="img-back" Style="background-color:white; border-radius:12px;">
+			<h1 class="top-text">Name Building</h1>
+			<div class="text-img">
+				@if (DeviceData.DeviceData is not null)
+				{
+					var (totalV, totalI, totalP, totalE) = DeviceData.GetBuildingTotals();
 
-				<h3>🏢 Building-Summary</h3>
-				<p><strong>Voltage:</strong> @totalV.ToString("F2") V</p>
-				<p><strong>Current:</strong> @totalI.ToString("F2") A</p>
-				<p><strong>Power:</strong> @totalP.ToString("F2") W</p>
-				<p><strong>Energy:</strong> @totalE.ToString("F2") J</p>
-			}
+					<h3>🏢 Building-Summary</h3>
+					<p><strong>Voltage:</strong> @totalV.ToString("F2") V</p>
+					<p><strong>Current:</strong> @totalI.ToString("F2") A</p>
+					<p><strong>Power:</strong> @totalP.ToString("F2") W</p>
+					<p><strong>Energy:</strong> @totalE.ToString("F2") J</p>
+				}
+			</div>
 		</div>
 	</div>
 
@@ -33,31 +35,35 @@
 							AnnotationIndex="5" />
 		</MudPaper>
 	</div>
-	<div class="row pt-4">
-		<div class="col-md-6">
-			<MudPaper Class="p-5" Elevation="3" Style="background-color:white; border-radius:12px;">
-				<MudChart Class="pt-5 pb-5" ChartType="ChartType.Donut" Width="300px" Height="300px"
-						  InputData="@data" InputLabels="@labels">
-					<CustomGraphics>
-						<text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle"
-							  text-anchor="middle" font-family="Helvetica" font-size="2">
-							Overall Usage
-						</text>
-						<text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle"
-							  text-anchor="middle" font-family="Helvetica" font-size="5">
-							@data.Sum().ToString("N0")
-						</text>
-					</CustomGraphics>
-				</MudChart>
-			</MudPaper>
-		</div>
-		<div class="col-md-6">
-			<MudPaper Class="pa-1 mt-4" Elevation="3" style="position: relative; height: 500px; width: 100%; align-content:center; background-color: white; border-radius:12px;">
-				<div class="gauge-container">
-					<GaugeComponent />
-				</div>
-			</MudPaper>
-		</div>
+	<div>
+		<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-3 px-0">
+			<MudGrid Spacing="3" Class="ma-0">
+				<MudItem xs="12" md="6" Class="pa-3">
+					<MudPaper Class="p-5" Elevation="3" Style="background-color:white; border-radius:12px; height: 500px; display: flex; align-items: center; justify-content: center;">
+						<MudChart Class="pt-5 pb-5" ChartType="ChartType.Donut" Width="300px" Height="300px"
+								  InputData="@data" InputLabels="@labels">
+							<CustomGraphics>
+								<text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle"
+									  text-anchor="middle" font-family="Helvetica" font-size="2">
+									Overall Usage
+								</text>
+								<text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle"
+									  text-anchor="middle" font-family="Helvetica" font-size="5">
+									@data.Sum().ToString("N0")
+								</text>
+							</CustomGraphics>
+						</MudChart>
+					</MudPaper>
+				</MudItem>
+				<MudItem xs="12" md="6" Class="pa-3">
+					<MudPaper Class="pa-1" Elevation="3" Style="position: relative; height: 500px; width: 100%; align-content:center; background-color: white; border-radius:12px; display: flex; align-items: center; justify-content: center;">
+						<div class="gauge-container">
+							<GaugeComponent />
+						</div>
+					</MudPaper>
+				</MudItem>
+			</MudGrid>
+		</MudContainer>
 	</div>
 </MudContainer>
 
